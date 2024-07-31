@@ -1,13 +1,21 @@
 import { StatusBar } from "expo-status-bar";
-import { useState, useEffect } from "react";
-import { StyleSheet, Text, View, TextInput, Button, Alert } from "react-native";
+import { useState, useEffect, useCallback } from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  TextInput,
+  Button,
+  Alert,
+  TouchableOpacity,
+} from "react-native";
 import { SQLiteProvider, useSQLiteContext } from "expo-sqlite";
 
 const initializeDb = async (db) => {
   try {
     await db.execAsync(`
       PRAGMA journal_mode = WAL;
-      CREATE TABLE IF NOT EXISTS testTable2 (id INTEGER PRIMARY KEY AUTOINCREMENT, date TEXT, figure INTEGER);
+      CREATE TABLE IF NOT EXISTS notes (id INTEGER PRIMARY KEY AUTOINCREMENT, date TEXT, note TEXT);
       `);
     console.log("DB connected");
   } catch (error) {
@@ -26,74 +34,130 @@ export default function App() {
 export function Todos() {
   const db = useSQLiteContext();
 
-  const [figures, setFigures] = useState("");
-  const [prevReadings, setPrevReadings] = useState([]);
+  const [note, setNote] = useState("");
+  const [prevNotes, setPrevNotes] = useState([]);
+  const [noteID, setNoteID] = useState('');
+  const [visible, setVisible] = useState(false)
 
   useEffect(() => {
-    async function fetchFigures() {
-      const result = await db.getAllAsync("SELECT * FROM testTable2");
-      setPrevReadings(result);
-      console.log(result);
+    async function fetchnote() {
+      if (db) {
+        try {
+          const result = await db.getAllAsync("SELECT * FROM notes");
+          setPrevNotes(result);
+        } catch (error) {
+          console.error("Database operation failed:", error);
+        }
+      } else {
+        console.error("Database is not open");
+      }
     }
-    fetchFigures();
+    fetchnote();
   }, []);
 
   const handleSubmit = async () => {
-    const figureValue = parseFloat(figures);
-    if (isNaN(figureValue)) {
-      alert("Please enter a valid number");
-      return;
-    }
-
     let dateString = new Date().toISOString();
     let date = dateString
       .slice(0, dateString.indexOf("T"))
       .split("-")
       .reverse()
       .join("-");
+
+    let res = await db.runAsync(
+      "INSERT INTO notes (date, note) values (?, ?)",
+      [date, note]
+    );
+    Alert.alert("Data added");
+    let lastNote = [...prevNotes];
+    lastNote.push({
+      id: res.lastInsertRowId,
+      date: date,
+      note: note,
+    });
+    setPrevNotes(lastNote);
+    setNote("");
+  };
+
+  const deleteFigure = async (id) => {
     try {
-      await db.runAsync("INSERT INTO testTable2 (date, figure) values (?, ?)", [
-        date,
-        figureValue,
-      ]);
-      Alert.alert("Data added")
-      let lastReading = [...prevReadings];
-      lastReading.push({
-        date: date,
-        figure: figureValue,
-      });
-      setPrevReadings(lastReading);
-      setFigures("");
+      let res = await db.runAsync("DELETE FROM notes WHERE id = ?", [id]);
+      Alert.alert("Note deleted");
+      let lastNote = [...prevNotes].filter(
+        (notes) => notes.id != id
+      );
+      setPrevNotes(lastNote);
     } catch (error) {
       console.log(error);
     }
   };
 
+  const editFigure = async(id)=>{
+    setNoteID(id);
+    setVisible(true);
+    console.log(id)
+    try {
+      const result = await db.getFirstAsync('SELECT note FROM notes WHERE id = ?', [noteID])
+      await setNote(result.note)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const updateNote = async () =>{
+    let text = note
+    const result = await db.runAsync("UPDATE notes set note = ? WHERE id = ?", [text, noteID])
+    setPrevNotes((lastNotes) => {
+      return lastNotes.map((note) => { 
+        if (note.id === noteID){
+          return {...note, note: text}
+        }
+        return note
+      })
+    })
+    setNote("");
+    setVisible(false);
+  }
+
   return (
     <View style={styles.container}>
-      <Text>TEST APP</Text>
+      <Text style={{paddingVertical: 10, textAlign: 'center', fontWeight: '500'}}>TEST APP</Text>
       <TextInput
-        style={{ margin: 10, borderColor: "black", borderWidth: 1, padding: 5 }}
-        keyboardType="numeric"
-        value={figures}
-        onChangeText={setFigures}
-        placeholder="0"
+        style={{ borderColor: "black", borderWidth: 1, padding: 5, width: '100%' }}
+        value={note}
+        onChangeText={setNote}
+        placeholder="Note"
       />
-      <Button title="submit" onPress={handleSubmit} color="lightgreen" />
+      {visible ?
+      <Button title="update" onPress={updateNote} color="blue" />
+      :
+      <Button title="submit" onPress={handleSubmit} color="red" />
+      }
       <View>
-        {prevReadings.map((item, index) => {
+        {prevNotes.map((item, index) => {
           return (
             <View
               key={index}
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                justifyContent: "space-between",
-                width: "80%",
+              style={{                
+                width: "100%",
+                padding: 10,
+                backgroundColor: '#ffe',
+                marginVertical: 10
               }}
             >
-              <Text>{item.date}</Text>
-              <Text>{item.figure}</Text>
+              <View>
+              <Text style={{fontSize: 15, fontStyle: 'italic'}}>{item.date}</Text>
+              <Text style={{fontSize: 18, fontWeight: '600'}}>{item.note}</Text>
+              </View>
+              <View style={{ display: "flex",
+                flexDirection: "row",
+                justifyContent: "space-evenly",}}>
+                <TouchableOpacity style={{ margin: 5 }}>
+                  <Text style={{backgroundColor: 'red', padding: 10, color: 'white'}} onPress={() => deleteFigure(item.id)}>Del</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={{ margin: 5 }}>
+                  <Text style={{backgroundColor: 'blue', padding: 10, color: 'white'}} onPress={() => editFigure(item.id)}>Edit</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           );
         })}
@@ -107,7 +171,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    alignItems: "center",
-    marginVertical: 30,
+    margin: 30,
   },
 });
