@@ -19,7 +19,7 @@ const initializeDb = async (db) => {
       `);
     console.log("DB connected");
   } catch (error) {
-    console.log(error);
+    console.log("DB initialization error:", error);
   }
 };
 
@@ -36,26 +36,29 @@ export function Todos() {
 
   const [note, setNote] = useState("");
   const [prevNotes, setPrevNotes] = useState([]);
-  const [noteID, setNoteID] = useState('');
-  const [visible, setVisible] = useState(false)
+  const [noteID, setNoteID] = useState("");
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    async function fetchnote() {
-      if (db) {
-        try {
-          const result = await db.getAllAsync("SELECT * FROM notes");
-          setPrevNotes(result);
-        } catch (error) {
-          console.error("Database operation failed:", error);
-        }
-      } else {
-        console.error("Database is not open");
-      }
+    async function fetchNotes(){
+      const result = await db.getAllAsync("SELECT * FROM notes");
+      setPrevNotes(result);
     }
-    fetchnote();
+    fetchNotes();
   }, []);
 
-  const handleSubmit = async () => {
+  // const fetchNotes = async () => {
+  //   if (db) {
+  //     try {
+  //       const result = await db.getAllAsync("SELECT * FROM notes");
+  //       setPrevNotes(result);
+  //     } catch (error) {
+  //       console.log(error)  
+  //     }
+  //   }
+  // };
+
+  const addNote = async () => {
     let dateString = new Date().toISOString();
     let date = dateString
       .slice(0, dateString.indexOf("T"))
@@ -67,7 +70,7 @@ export function Todos() {
       "INSERT INTO notes (date, note) values (?, ?)",
       [date, note]
     );
-    Alert.alert("Data added");
+    Alert.alert("Note added");
     let lastNote = [...prevNotes];
     lastNote.push({
       id: res.lastInsertRowId,
@@ -77,85 +80,126 @@ export function Todos() {
     setPrevNotes(lastNote);
     setNote("");
   };
-
-  const deleteFigure = async (id) => {
+  const deleteNote = async (id) => {
     try {
-      let res = await db.runAsync("DELETE FROM notes WHERE id = ?", [id]);
+      await db.runAsync("DELETE FROM notes WHERE id = ?", [id]);
       Alert.alert("Note deleted");
-      let lastNote = [...prevNotes].filter(
-        (notes) => notes.id != id
-      );
+      let lastNote = [...prevNotes].filter((notes) => notes.id != id);
       setPrevNotes(lastNote);
     } catch (error) {
       console.log(error);
     }
   };
 
-  const editFigure = async(id)=>{
+  const editNote = async (id) => {
     setNoteID(id);
     setVisible(true);
-    console.log(id)
     try {
-      const result = await db.getFirstAsync('SELECT note FROM notes WHERE id = ?', [noteID])
-      await setNote(result.note)
-    } catch (error) {
-      console.log(error)
-    }
-  }
+      // Fetch the note first
+      const result = await db.getFirstAsync(
+        "SELECT note FROM notes WHERE id = ?",
+        [id]
+      );
+      console.log("Fetched note:", result.note); // Log fetched note
 
-  const updateNote = async () =>{
-    let text = note
-    const result = await db.runAsync("UPDATE notes set note = ? WHERE id = ?", [text, noteID])
+      // Then set the note
+      setNote(result.note);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const updateNote = async () => {
+    let text = note;
+    const result = await db.runAsync("UPDATE notes set note = ? WHERE id = ?", [
+      text,
+      noteID,
+    ]);
     setPrevNotes((lastNotes) => {
-      return lastNotes.map((note) => { 
-        if (note.id === noteID){
-          return {...note, note: text}
+      return lastNotes.map((note) => {
+        if (note.id === noteID) {
+          return { ...note, note: text };
         }
-        return note
-      })
-    })
+        return note;
+      });
+    });
     setNote("");
     setVisible(false);
-  }
+  };
 
   return (
     <View style={styles.container}>
-      <Text style={{paddingVertical: 10, textAlign: 'center', fontWeight: '500'}}>TEST APP</Text>
+      <Text
+        style={{ paddingVertical: 10, textAlign: "center", fontWeight: "500" }}
+      >
+        TEST APP
+      </Text>
       <TextInput
-        style={{ borderColor: "black", borderWidth: 1, padding: 5, width: '100%' }}
+        style={{
+          borderColor: "black",
+          borderWidth: 1,
+          padding: 5,
+          width: "100%",
+        }}
         value={note}
         onChangeText={setNote}
         placeholder="Note"
       />
-      {visible ?
-      <Button title="update" onPress={updateNote} color="blue" />
-      :
-      <Button title="submit" onPress={handleSubmit} color="red" />
-      }
+      {visible ? (
+        <Button title="update" onPress={updateNote} color="blue" />
+      ) : (
+        <Button title="submit" onPress={addNote} color="red" />
+      )}
       <View>
         {prevNotes.map((item, index) => {
           return (
             <View
               key={index}
-              style={{                
+              style={{
                 width: "100%",
                 padding: 10,
-                backgroundColor: '#ffe',
-                marginVertical: 10
+                backgroundColor: "#ffe",
+                marginVertical: 10,
               }}
             >
               <View>
-              <Text style={{fontSize: 15, fontStyle: 'italic'}}>{item.date}</Text>
-              <Text style={{fontSize: 18, fontWeight: '600'}}>{item.note}</Text>
+                <Text style={{ fontSize: 15, fontStyle: "italic" }}>
+                  {item.date}
+                </Text>
+                <Text style={{ fontSize: 18, fontWeight: "600" }}>
+                  {item.note}
+                </Text>
               </View>
-              <View style={{ display: "flex",
-                flexDirection: "row",
-                justifyContent: "space-evenly",}}>
+              <View
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  justifyContent: "space-evenly",
+                }}
+              >
                 <TouchableOpacity style={{ margin: 5 }}>
-                  <Text style={{backgroundColor: 'red', padding: 10, color: 'white'}} onPress={() => deleteFigure(item.id)}>Del</Text>
+                  <Text
+                    style={{
+                      backgroundColor: "red",
+                      padding: 10,
+                      color: "white",
+                    }}
+                    onPress={() => deleteNote(item.id)}
+                  >
+                    Del
+                  </Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={{ margin: 5 }}>
-                  <Text style={{backgroundColor: 'blue', padding: 10, color: 'white'}} onPress={() => editFigure(item.id)}>Edit</Text>
+                  <Text
+                    style={{
+                      backgroundColor: "blue",
+                      padding: 10,
+                      color: "white",
+                    }}
+                    onPress={() => editNote(item.id)}
+                  >
+                    Edit
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>
