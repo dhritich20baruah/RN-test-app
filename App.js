@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import Home from "./components/Home";
 import About from "./components/About";
+import Notes from "./components/Notes";
 
 const Stack = createNativeStackNavigator()
 
@@ -22,6 +23,7 @@ export default function App() {
     <Stack.Navigator>
       <Stack.Screen name="Home" component={Home}/>
       <Stack.Screen name="About" component={About}/>
+      <Stack.Screen name="Notes" component={Notes}/>
     </Stack.Navigator>
    </NavigationContainer>
   );

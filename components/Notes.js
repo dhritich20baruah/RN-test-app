@@ -8,6 +8,7 @@ import {
   Button,
   Alert,
   TouchableOpacity,
+  ScrollView
 } from "react-native";
 import { SQLiteProvider, useSQLiteContext } from "expo-sqlite";
 
@@ -128,6 +129,7 @@ export function Todos() {
   };
 
   return (
+    <ScrollView>
     <View style={styles.container}>
       <Text
         style={{ paddingVertical: 10, textAlign: "center", fontWeight: "500" }}
@@ -208,6 +210,7 @@ export function Todos() {
       </View>
       <StatusBar style="auto" />
     </View>
+    </ScrollView>
   );
 }
 
