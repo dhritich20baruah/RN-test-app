@@ -7,11 +7,13 @@ import {
     Alert,
     TouchableOpacity,
   } from "react-native";
+  import Chart from "./Chart";
   
   export default function About() {
     return (
       <View style={styles.container}>
         <Text>About Screen</Text>
+        <Chart/>
       </View>
     );
   }
@@ -22,7 +24,7 @@ import {
       justifyContent: "center",
       alignItems: "center",
       backgroundColor: "#fff",
-      margin: 30,
+      padding: 10
     },
   });
   

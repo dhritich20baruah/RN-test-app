@@ -13,9 +13,12 @@ export default function Home({navigation}) {
   return (
     <View style={styles.container}>
       <Text>Home Screen: This is the home screen</Text>
-      <Button onPress={()=>navigation.navigate("About")} title="About"/>
-      <Button onPress={()=>navigation.navigate("Notes")} title="Notes"/>
-
+      <TouchableOpacity onPress={()=>navigation.navigate("About")} style={styles.btn}>
+      <Text style={styles.btnText}>ABOUT</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={()=>navigation.navigate("Notes")} style={styles.btn}>
+      <Text style={styles.btnText}>NOTES</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -23,9 +26,18 @@ export default function Home({navigation}) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#fff",
-    margin: 30,
+    paddingTop: 20
   },
+  btn: {
+    width: 80,
+    backgroundColor: "indigo",
+    margin: 5,
+    padding: 5
+  },
+  btnText:{
+    textAlign: 'center',
+    color: 'white'
+  }
 });

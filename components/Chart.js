@@ -7,7 +7,14 @@ const screenWidth = Dimensions.get('window').width;
 const Chart = ({data}) => {
   return (
     <LineChart
-      data={data}
+    data={{
+      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+      datasets: [
+        {
+          data: [20, 45, 28, 80, 99, 43],
+        },
+      ],
+    }}
       width={screenWidth}
       height={300}
       verticalLabelRotation={30}
@@ -15,7 +22,7 @@ const Chart = ({data}) => {
       chartConfig={{
         backgroundColor: '#ffffff',
         backgroundGradientFrom: '#fffeee',
-        backgroundGradientTo: 'green',
+        backgroundGradientTo: 'orange',
         decimalPlaces: 0, // optional, defaults to 2dp
         color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
         labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
