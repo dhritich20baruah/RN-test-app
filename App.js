@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Home from "./components/Home";
 import About from "./components/About";
 import Notes from "./components/Notes";
+import "expo-dev-client"
 
 const Stack = createNativeStackNavigator()
 

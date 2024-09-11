@@ -48,17 +48,6 @@ export function Todos() {
     fetchNotes();
   }, []);
 
-  // const fetchNotes = async () => {
-  //   if (db) {
-  //     try {
-  //       const result = await db.getAllAsync("SELECT * FROM notes");
-  //       setPrevNotes(result);
-  //     } catch (error) {
-  //       console.log(error)  
-  //     }
-  //   }
-  // };
-
   const addNote = async () => {
     let dateString = new Date().toISOString();
     let date = dateString

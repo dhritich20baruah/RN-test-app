@@ -1,47 +1,41 @@
 import React from 'react';
-import { LineChart } from 'react-native-chart-kit';
-import { Dimensions } from 'react-native';
+import { BarChart } from 'react-native-gifted-charts';
+import { SQLiteProvider, useSQLiteContext } from 'expo-sqlite';
 
-const screenWidth = Dimensions.get('window').width;
+const initializeDb = async (db) => {
+  try {
+    await db.execAsync(`
+      PRAGMA journal_mode = WAL;
+      CREATE TABLE IF NOT EXISTS sales (id INTEGER PRIMARY KEY AUTOINCREMENT, date TEXT, volume INTEGER, revenue INTEGER);
+      `);
+    console.log("DB connected");
+  } catch (error) {
+    console.log("DB initialization error:", error);
+  }
+};
 
-const Chart = ({data}) => {
+const data = [
+  { value: 50, label: 'Jan' },
+  { value: 80, label: 'Feb' },
+  { value: 40, label: 'Mar' },
+];
+
+const Chart = () => {
   return (
-    <LineChart
-    data={{
-      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-      datasets: [
-        {
-          data: [20, 45, 28, 80, 99, 43],
-        },
-      ],
-    }}
-      width={screenWidth}
-      height={300}
-      verticalLabelRotation={30}
-      yAxisLabel=""
-      chartConfig={{
-        backgroundColor: '#ffffff',
-        backgroundGradientFrom: '#fffeee',
-        backgroundGradientTo: 'orange',
-        decimalPlaces: 0, // optional, defaults to 2dp
-        color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-        labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-        style: {
-          borderRadius: 16,
-        },
-        propsForDots: {
-          r: '6',
-          strokeWidth: '2',
-          stroke: '#800000'
-        }
-      }}
-      bezier
-      style={{
-        marginVertical: 8,
-        borderRadius: 16
-      }}
+    <BarChart
+      data={data}
+      frontColor={'#800000'}
+      barWidth={30}
+      barBorderRadius={5}
+      initialSpacing={10}
+      xAxisThickness={1}
     />
   );
 };
+
+export function salesFigure(){
+  const db = useSQLiteContext();
+  
+}
 
 export default Chart;
