@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { BarChart } from "react-native-gifted-charts";
 import { SQLiteProvider, useSQLiteContext } from "expo-sqlite";
 import {
@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   ScrollView,
 } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 
 const initializeDb = async (db) => {
   try {
@@ -24,24 +25,10 @@ const initializeDb = async (db) => {
   }
 };
 
-const data = [
-  { value: 50, label: "Jan" },
-  { value: 80, label: "Feb" },
-  { value: 40, label: "Mar" },
-];
-
 const Chart = () => {
   return (
     <SQLiteProvider databaseName="testapp.db" onInit={initializeDb}>
-      <SalesFigure />
-      <BarChart
-        data={data}
-        frontColor={"#800000"}
-        barWidth={30}
-        barBorderRadius={5}
-        initialSpacing={10}
-        xAxisThickness={1}
-      />
+      <SalesFigure /> 
     </SQLiteProvider>
   );
 };
@@ -51,14 +38,23 @@ export function SalesFigure() {
   const [volume, setVolume] = useState(0);
   const [revenue, setRevenue] = useState(0);
   const [prevSales, setPrevSales] = useState([]);
+  const [data, setData] = useState([])
 
-  useEffect(() => {
-    async function fetchData() {
-      const result = await db.getAllAsync("SELECT * FROM sales");
-      setPrevSales(result);
-    }
-    fetchData();
-  }, []);
+  async function fetchData() {
+    const result = await db.getAllAsync("SELECT * FROM sales");
+    setPrevSales(result);
+    const chartData = result.map((row) => ({
+      value: row.revenue,
+      label: row.date,
+    }));
+    setData(chartData)
+  }
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchData();
+    }, [])
+  );
 
   const addData = async () => {
     let dateString = new Date().toISOString();
@@ -84,6 +80,7 @@ export function SalesFigure() {
     setVolume(0);
     setRevenue(0);
   };
+
   return (
     <ScrollView>
       <View>
@@ -109,8 +106,17 @@ export function SalesFigure() {
           value={revenue}
           onChangeText={setRevenue}
         />
-           <Button title="ADD DATA" onPress={addData} color="blue" />
+        <Button title="ADD DATA" onPress={addData} color="blue" />
       </View>
+
+      <BarChart
+        data={data}
+        frontColor={"#800000"}
+        barWidth={30}
+        barBorderRadius={5}
+        initialSpacing={10}
+        xAxisThickness={1}
+      />
     </ScrollView>
   );
 }
