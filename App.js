@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Home from "./components/Home";
 import About from "./components/About";
 import Notes from "./components/Notes";
+import Maps from "./components/Maps";
 import "expo-dev-client"
 
 const Stack = createNativeStackNavigator()
@@ -11,10 +12,12 @@ const Stack = createNativeStackNavigator()
 export default function App() {
   return (
    <NavigationContainer>
+    <StatusBar style="auto" />
     <Stack.Navigator>
       <Stack.Screen name="Home" component={Home}/>
       <Stack.Screen name="About" component={About}/>
       <Stack.Screen name="Notes" component={Notes}/>
+      <Stack.Screen name="Maps" component={Maps}/>
     </Stack.Navigator>
    </NavigationContainer>
   );
