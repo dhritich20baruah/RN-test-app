@@ -8,9 +8,10 @@ import {
   Button,
   Alert,
   TouchableOpacity,
-  ScrollView
+  SafeAreaView,
 } from "react-native";
 import { SQLiteProvider, useSQLiteContext } from "expo-sqlite";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 
 const initializeDb = async (db) => {
   try {
@@ -32,44 +33,27 @@ export default function Notes() {
   );
 }
 
-export function Todos() {
+export function Todos({navigation}) {
   const db = useSQLiteContext();
+  // const navigation = useNavigation();
 
   const [note, setNote] = useState("");
   const [prevNotes, setPrevNotes] = useState([]);
   const [noteID, setNoteID] = useState("");
   const [visible, setVisible] = useState(false);
 
-  useEffect(() => {
-    async function fetchNotes(){
-      const result = await db.getAllAsync("SELECT * FROM notes");
-      setPrevNotes(result);
-    }
-    fetchNotes();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchNotes
+    }, [])
+  );
 
-  const addNote = async () => {
-    let dateString = new Date().toISOString();
-    let date = dateString
-      .slice(0, dateString.indexOf("T"))
-      .split("-")
-      .reverse()
-      .join("-");
+  async function fetchNotes() {
+    const result = await db.getAllAsync("SELECT * FROM notes");
+    setPrevNotes(result);
+    console.log(result)
+  }
 
-    let res = await db.runAsync(
-      "INSERT INTO notes (date, note) values (?, ?)",
-      [date, note]
-    );
-    Alert.alert("Note added");
-    let lastNote = [...prevNotes];
-    lastNote.push({
-      id: res.lastInsertRowId,
-      date: date,
-      note: note,
-    });
-    setPrevNotes(lastNote);
-    setNote("");
-  };
   const deleteNote = async (id) => {
     try {
       await db.runAsync("DELETE FROM notes WHERE id = ?", [id]);
@@ -118,29 +102,7 @@ export function Todos() {
   };
 
   return (
-    <ScrollView>
-    <View style={styles.container}>
-      <Text
-        style={{ paddingVertical: 10, textAlign: "center", fontWeight: "500" }}
-      >
-        TEST APP
-      </Text>
-      <TextInput
-        style={{
-          borderColor: "black",
-          borderWidth: 1,
-          padding: 5,
-          width: "100%",
-        }}
-        value={note}
-        onChangeText={setNote}
-        placeholder="Note"
-      />
-      {visible ? (
-        <Button title="update" onPress={updateNote} color="blue" />
-      ) : (
-        <Button title="submit" onPress={addNote} color="red" />
-      )}
+    <SafeAreaView style={styles.container}>
       <View>
         {prevNotes.map((item, index) => {
           return (
@@ -198,8 +160,13 @@ export function Todos() {
         })}
       </View>
       <StatusBar style="auto" />
-    </View>
-    </ScrollView>
+      <TouchableOpacity
+        style={styles.floatBtn}
+        onPress={() => navigation.navigate("AddNote")}
+      >
+        <Text style={styles.btnText}>+</Text>
+      </TouchableOpacity>
+    </SafeAreaView>
   );
 }
 
@@ -207,6 +174,24 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    padding: 10
+    padding: 10,
+    position: "relative",
+    height: "100%",
+  },
+  floatBtn: {
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "orange",
+    position: "absolute",
+    borderRadius: 50,
+    top: "80%",
+    right: 30,
+    width: 50,
+    height: 50,
+    elevation: 5,
+  },
+  btnText: {
+    color: "white",
+    fontSize: 35,
   },
 });
