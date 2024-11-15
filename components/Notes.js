@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { SQLiteProvider, useSQLiteContext } from "expo-sqlite";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 const initializeDb = async (db) => {
   try {
@@ -33,9 +34,9 @@ export default function Notes() {
   );
 }
 
-export function Todos({navigation}) {
+export function Todos() {
   const db = useSQLiteContext();
-  // const navigation = useNavigation();
+  const navigation = useNavigation();
 
   const [note, setNote] = useState("");
   const [prevNotes, setPrevNotes] = useState([]);
@@ -44,14 +45,13 @@ export function Todos({navigation}) {
 
   useFocusEffect(
     useCallback(() => {
-      fetchNotes
+      fetchNotes();
     }, [])
   );
 
   async function fetchNotes() {
     const result = await db.getAllAsync("SELECT * FROM notes");
     setPrevNotes(result);
-    console.log(result)
   }
 
   const deleteNote = async (id) => {
@@ -111,49 +111,31 @@ export function Todos({navigation}) {
               style={{
                 width: "100%",
                 padding: 10,
-                backgroundColor: "#ffe",
+                backgroundColor: "#caf1de",
                 marginVertical: 10,
+                elevation: 5,
               }}
             >
               <View>
-                <Text style={{ fontSize: 15, fontStyle: "italic" }}>
-                  {item.date}
-                </Text>
-                <Text style={{ fontSize: 18, fontWeight: "600" }}>
-                  {item.note}
-                </Text>
-              </View>
-              <View
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  justifyContent: "space-evenly",
-                }}
-              >
-                <TouchableOpacity style={{ margin: 5 }}>
+                <View
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                  }}
+                >
                   <Text
-                    style={{
-                      backgroundColor: "red",
-                      padding: 10,
-                      color: "white",
-                    }}
-                    onPress={() => deleteNote(item.id)}
+                    style={{ fontSize: 15, fontStyle: "italic", color: "red" }}
                   >
-                    Del
+                    {item.date}
                   </Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={{ margin: 5 }}>
-                  <Text
-                    style={{
-                      backgroundColor: "blue",
-                      padding: 10,
-                      color: "white",
-                    }}
-                    onPress={() => editNote(item.id)}
-                  >
-                    Edit
-                  </Text>
-                </TouchableOpacity>
+                  <TouchableOpacity style={{ margin: 5 }}>
+                    <Text onPress={() => deleteNote(item.id)}>
+                      <Ionicons name="trash-outline" size={25} color="red" />
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+                <Text style={{ fontSize: 15 }}>{item.note.slice(0, 50)}....</Text>
               </View>
             </View>
           );
