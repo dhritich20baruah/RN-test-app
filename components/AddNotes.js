@@ -27,9 +27,6 @@ export function Notes() {
   const db = useSQLiteContext();
   const navigation = useNavigation();
   const [note, setNote] = useState("");
-  const [prevNotes, setPrevNotes] = useState([]);
-  const [noteID, setNoteID] = useState("");
-  const [visible, setVisible] = useState(false);
 
   const addNote = async () => {
     let dateString = new Date().toISOString();

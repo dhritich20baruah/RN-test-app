@@ -37,20 +37,17 @@ export default function Notes() {
 export function Todos() {
   const db = useSQLiteContext();
   const navigation = useNavigation();
-
-  const [note, setNote] = useState("");
   const [prevNotes, setPrevNotes] = useState([]);
-  const [noteID, setNoteID] = useState("");
-  const [visible, setVisible] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
       fetchNotes();
     }, [])
   );
-
+  
   async function fetchNotes() {
     const result = await db.getAllAsync("SELECT * FROM notes");
+    console.log("Focuss")
     setPrevNotes(result);
   }
 
@@ -65,40 +62,12 @@ export function Todos() {
     }
   };
 
-  const editNote = async (id) => {
-    setNoteID(id);
-    setVisible(true);
+  const viewNote = async (id) => {
     try {
-      // Fetch the note first
-      const result = await db.getFirstAsync(
-        "SELECT note FROM notes WHERE id = ?",
-        [id]
-      );
-      console.log("Fetched note:", result.note); // Log fetched note
-
-      // Then set the note
-      setNote(result.note);
+      navigation.navigate("ViewNote", {id})
     } catch (error) {
       console.log(error);
     }
-  };
-
-  const updateNote = async () => {
-    let text = note;
-    const result = await db.runAsync("UPDATE notes set note = ? WHERE id = ?", [
-      text,
-      noteID,
-    ]);
-    setPrevNotes((lastNotes) => {
-      return lastNotes.map((note) => {
-        if (note.id === noteID) {
-          return { ...note, note: text };
-        }
-        return note;
-      });
-    });
-    setNote("");
-    setVisible(false);
   };
 
   return (
@@ -135,7 +104,7 @@ export function Todos() {
                     </Text>
                   </TouchableOpacity>
                 </View>
-                <Text style={{ fontSize: 15 }}>{item.note.slice(0, 50)}....</Text>
+                <Text style={{ fontSize: 15 }} onPress={()=>viewNote(item.id)}>{item.note.slice(0, 50)}....</Text>
               </View>
             </View>
           );

@@ -7,6 +7,7 @@ import Notes from "./components/Notes";
 import Maps from "./components/Maps";
 import "expo-dev-client"
 import AddNote from "./components/AddNotes";
+import ViewNote from "./components/ViewNote";
 
 const Stack = createNativeStackNavigator()
 
@@ -19,6 +20,7 @@ export default function App() {
       <Stack.Screen name="About" component={About}/>
       <Stack.Screen name="Notes" component={Notes}/>
       <Stack.Screen name="AddNote" component={AddNote}/>
+      <Stack.Screen name="ViewNote" component={ViewNote}/>
       <Stack.Screen name="Maps" component={Maps}/>
     </Stack.Navigator>
    </NavigationContainer>
