@@ -37,25 +37,26 @@ export default function Notes() {
 export function Todos() {
   const db = useSQLiteContext();
   const navigation = useNavigation();
-  const [prevNotes, setPrevNotes] = useState([]);
+  const [notes, setNotes] = useState([]);
+
+  async function fetchNotes() {
+    const result = await db.getAllAsync("SELECT * FROM notes");
+    setNotes(result);
+  }
 
   useFocusEffect(
     useCallback(() => {
-      fetchNotes();
+      (async () => {
+        await fetchNotes();
+      })();
     }, [])
   );
-  
-  async function fetchNotes() {
-    const result = await db.getAllAsync("SELECT * FROM notes");
-    console.log("Focuss")
-    setPrevNotes(result);
-  }
 
   const deleteNote = async (id) => {
     try {
       await db.runAsync("DELETE FROM notes WHERE id = ?", [id]);
       Alert.alert("Note deleted");
-      let lastNote = [...prevNotes].filter((notes) => notes.id != id);
+      let lastNote = [...prevNotes].filter((note) => note.id != id);
       setPrevNotes(lastNote);
     } catch (error) {
       console.log(error);
@@ -64,7 +65,7 @@ export function Todos() {
 
   const viewNote = async (id) => {
     try {
-      navigation.navigate("ViewNote", {id})
+      navigation.navigate("ViewNote", { id });
     } catch (error) {
       console.log(error);
     }
@@ -73,7 +74,7 @@ export function Todos() {
   return (
     <SafeAreaView style={styles.container}>
       <View>
-        {prevNotes.map((item, index) => {
+        {notes.map((item, index) => {
           return (
             <View
               key={index}
@@ -104,7 +105,12 @@ export function Todos() {
                     </Text>
                   </TouchableOpacity>
                 </View>
-                <Text style={{ fontSize: 15 }} onPress={()=>viewNote(item.id)}>{item.note.slice(0, 50)}....</Text>
+                <Text
+                  style={{ fontSize: 15 }}
+                  onPress={() => viewNote(item.id)}
+                >
+                  {item.note.slice(0, 50)}....
+                </Text>
               </View>
             </View>
           );
