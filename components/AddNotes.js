@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { TextInput, StyleSheet, View, TouchableOpacity, Text, Button } from "react-native";
+import { TextInput, StyleSheet, View, TouchableOpacity, Text, Button, Alert } from "react-native";
 import { SQLiteProvider, useSQLiteContext } from "expo-sqlite";
 import { useNavigation } from "@react-navigation/native";
 
@@ -40,7 +40,8 @@ export function Notes() {
       "INSERT INTO notes (date, note) values (?, ?)",
       [date, note]
     );
-    navigation.goBack();
+    Alert.alert("Note added")
+    navigation.navigate("Notes");
   };
   return (
     <View style={styles.container}>

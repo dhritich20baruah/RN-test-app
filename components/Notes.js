@@ -42,6 +42,7 @@ export function Todos() {
   async function fetchNotes() {
     const result = await db.getAllAsync("SELECT * FROM notes");
     setNotes(result);
+    console.log("notes:", result)
   }
 
   useFocusEffect(
@@ -55,9 +56,9 @@ export function Todos() {
   const deleteNote = async (id) => {
     try {
       await db.runAsync("DELETE FROM notes WHERE id = ?", [id]);
+      let lastNote = [...notes].filter((note) => note.id != id);
+      setNotes(lastNote);
       Alert.alert("Note deleted");
-      let lastNote = [...prevNotes].filter((note) => note.id != id);
-      setPrevNotes(lastNote);
     } catch (error) {
       console.log(error);
     }
