@@ -67,6 +67,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     fontSize: 16,
-    textAlignVertical: "top", // Ensures text starts from the top of the input
+    textAlignVertical: "top", 
   },
 });
