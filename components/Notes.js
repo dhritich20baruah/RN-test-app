@@ -71,6 +71,7 @@ export function Todos() {
       console.log(error);
     }
   };
+  
 
   return (
     <SafeAreaView style={styles.container}>
@@ -124,6 +125,8 @@ export function Todos() {
       >
         <Text style={styles.btnText}>+</Text>
       </TouchableOpacity>
+   
+      <Button onPress={()=>navigation.replace("Notes")} title="Fetch Notes"/>
     </SafeAreaView>
   );
 }

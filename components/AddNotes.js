@@ -41,7 +41,7 @@ export function Notes() {
       [date, note]
     );
     Alert.alert("Note added")
-    navigation.navigate("Notes");
+    navigation.replace("Notes");
   };
   return (
     <View style={styles.container}>
